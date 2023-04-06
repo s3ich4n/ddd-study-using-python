@@ -34,8 +34,11 @@
 
 ### 설치 필요
 
-- Python 3.10 이상
-- [Docker](https://www.docker.com/get-started) 설치
+- Python 3.8 이상
+  - (if possible) pyenv 를 통한 개별 환경을 구성할 것을 추천!
+    - [Simple Python Version Management: pyenv](https://github.com/pyenv/pyenv) 
+    - [poetry: Managing environments](https://python-poetry.org/docs/managing-environments/)
+- 운영체제 환경에 맞는 [Docker](https://www.docker.com/get-started) 설치
 
 ### 라이브러리 및 추가 설정
 

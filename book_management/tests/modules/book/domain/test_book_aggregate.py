@@ -2,13 +2,14 @@
 # "도서" 도메인의 기본에 대한 테스트코드
 #
 # @author      Seongeun Yu (s3ich4n@gmail.com)
-# @date        2023/03/25 22:54 created.
+# @date        2023/04/07 22:54 created.
 # @license     Please refer to the LICENSE file on a root directory of project.
 #
 
 
 import datetime
 
+from dataclasses import asdict, FrozenInstanceError
 from functools import partial
 from typing import Any, Dict
 
@@ -17,8 +18,8 @@ import pytest
 from pydantic import ValidationError
 
 from tests.utils.asserts import assert_validation_error
-from src.modules.book.entities import Book
-from src.modules.book.isbn import Isbn
+from src.modules.books.domain.aggregate.model import Book
+from src.modules.books.domain.value_objects import Isbn
 
 DataType = Dict[str, Any]
 
@@ -59,14 +60,14 @@ class TestBook:
 
         def test_immutability(self, valid_book_data):
             data = Book(**valid_book_data)
-            for key in data.dict().keys():
-                with pytest.raises(TypeError):
+            for key in asdict(data).keys():
+                with pytest.raises(FrozenInstanceError):
                     setattr(data, key, "ERROR VALUE")
 
     class TestBookId:
         assert_validation_error = partial(assert_validation_error, 1, "id")
 
-        def test_id_should_be_number_when_initialized(
+        def test_should_be_number_when_initialized(
             self,
             valid_book_data,
         ):
@@ -76,7 +77,7 @@ class TestBook:
 
             self.assert_validation_error("type_error.integer", excinfo)
 
-        def test_id_should_be_positive_value_when_initialized(
+        def test_should_be_positive_value_when_initialized(
             self,
             valid_book_data,
         ):
@@ -84,27 +85,20 @@ class TestBook:
                 valid_book_data.update({"id": -1})
                 Book(**valid_book_data)
 
-            self.assert_validation_error("value_error.number.not_ge", excinfo)
+            self.assert_validation_error("value_error.number.not_gt", excinfo)
 
-        def test_id_is_required_when_initialized(
+        def test_is_required_when_initialized(
             self,
             valid_book_data,
         ):
-            with pytest.raises(ValidationError) as excinfo:
+            with pytest.raises(TypeError) as excinfo:
                 valid_book_data.pop("id")
                 Book(**valid_book_data)
 
-            self.assert_validation_error("value_error.missing", excinfo)
-
     class TestBookTitle:
-        """
-
-        TODO: 다국어 지원
-
-        """
         assert_validation_error = partial(assert_validation_error, 1, "title")
 
-        def test_book_title_should_be_string_when_initialized(
+        def test_should_be_string_when_initialized(
             self,
             valid_book_data,
         ):
@@ -114,7 +108,7 @@ class TestBook:
 
             self.assert_validation_error("type_error.none.not_allowed", excinfo)
 
-        def test_book_title_length_is_greater_than_1(
+        def test_length_is_greater_than_1(
             self,
             valid_book_data,
         ):
@@ -124,7 +118,7 @@ class TestBook:
 
             self.assert_validation_error("value_error.any_str.min_length", excinfo)
 
-        def test_book_title_length_is_less_than_128(
+        def test_length_is_less_than_128(
             self,
             valid_book_data,
         ):
@@ -134,20 +128,18 @@ class TestBook:
 
             self.assert_validation_error("value_error.any_str.max_length", excinfo)
 
-        def test_book_title_is_required_when_initialized(
+        def test_is_required_when_initialized(
             self,
             valid_book_data,
         ):
-            with pytest.raises(ValidationError) as excinfo:
+            with pytest.raises(ValidationError):
                 valid_book_data.pop("title")
                 Book(**valid_book_data)
-
-            self.assert_validation_error("value_error.missing", excinfo)
 
     class TestBookPage:
         assert_validation_error = partial(assert_validation_error, 1, "page")
 
-        def test_book_page_should_be_number_when_initialized(
+        def test_should_be_number_when_initialized(
             self,
             valid_book_data,
         ):
@@ -157,7 +149,7 @@ class TestBook:
 
             self.assert_validation_error("type_error.integer", excinfo)
 
-        def test_book_page_should_be_positive_value_when_initialized(
+        def test_should_be_positive_value_when_initialized(
             self,
             valid_book_data,
         ):
@@ -167,20 +159,18 @@ class TestBook:
 
             self.assert_validation_error("value_error.number.not_gt", excinfo)
 
-        def test_book_page_is_required_when_initialized(
+        def test_is_required_when_initialized(
             self,
             valid_book_data,
         ):
-            with pytest.raises(ValidationError) as excinfo:
+            with pytest.raises(TypeError):
                 valid_book_data.pop("page")
                 Book(**valid_book_data)
-
-            self.assert_validation_error("value_error.missing", excinfo)
 
     class TestBookRevision:
         assert_validation_error = partial(assert_validation_error, 1, "revision")
 
-        def test_book_revision_should_be_number_when_initialized(
+        def test_should_be_number_when_initialized(
             self,
             valid_book_data,
         ):
@@ -190,7 +180,7 @@ class TestBook:
 
             self.assert_validation_error("type_error.integer", excinfo)
 
-        def test_book_revision_should_be_positive_value_when_initialized(
+        def test_should_be_positive_value_when_initialized(
             self,
             valid_book_data,
         ):
@@ -198,22 +188,20 @@ class TestBook:
                 valid_book_data.update({"revision": -1})
                 Book(**valid_book_data)
 
-            self.assert_validation_error("value_error.number.not_ge", excinfo)
+            self.assert_validation_error("value_error.number.not_gt", excinfo)
 
-        def test_book_revision_is_required_when_initialized(
+        def test_is_required_when_initialized(
             self,
             valid_book_data,
         ):
-            with pytest.raises(ValidationError) as excinfo:
+            with pytest.raises(TypeError):
                 valid_book_data.pop("revision")
                 Book(**valid_book_data)
-
-            self.assert_validation_error("value_error.missing", excinfo)
 
     class TestBookDTReleasedIn:
         assert_validation_error = partial(assert_validation_error, 1, "dt_released_in")
 
-        def test_book_datetime_released_in_should_be_datetime_object_when_initialized(
+        def test_should_be_datetime_object_when_initialized(
                 self,
                 valid_book_data,
         ):
@@ -223,12 +211,10 @@ class TestBook:
 
             self.assert_validation_error("value_error.date", excinfo)
 
-        def test_book_datetime_is_required_when_initialized(
+        def test_is_required_when_initialized(
             self,
             valid_book_data,
         ):
-            with pytest.raises(ValidationError) as excinfo:
+            with pytest.raises(TypeError):
                 valid_book_data.pop("dt_released_in")
                 Book(**valid_book_data)
-
-            self.assert_validation_error("value_error.missing", excinfo)

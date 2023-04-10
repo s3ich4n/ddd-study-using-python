@@ -16,3 +16,22 @@ services:
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
+
+  book_management:
+    build:
+      context: .
+      dockerfile: compose/production/book_management/Dockerfile
+    image: book_management:0.1.0
+    container_name: book_management
+    command: /start
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_PG_URL: /run/secrets/db_fullpath
+      DEBUG: true
+    secrets:
+      - db_fullpath
+
+secrets:
+  db_fullpath:
+    file: src/.secrets/postgres.txt

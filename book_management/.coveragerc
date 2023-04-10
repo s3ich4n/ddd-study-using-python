@@ -1,0 +1,7 @@
+[run]
+omit =
+    *.pytest_cache*
+    src/common/infrastructures/postgres/migrations/*
+    src/.secrets/*
+    assets/*
+    compose/*

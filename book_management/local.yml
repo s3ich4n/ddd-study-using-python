@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  redis: # See Also: https://hub.docker.com/_/redis
+    image: redis:7.0.5-alpine
+    hostname: hostname-redis
+    ports:
+      - "6379:6379"
+
+  postgres: # See Also: https://hub.docker.com/_/postgres
+    image: postgres:14.6-alpine
+    hostname: hostname-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+
+  book_management:
+    build:
+      context: .
+      dockerfile: compose/local/book_management/Dockerfile
+    image: book_management:0.1.0-rc
+    container_name: book_management
+    command: /start
+    volumes:
+      - "./src:/book_management/src"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env

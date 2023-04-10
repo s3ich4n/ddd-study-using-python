@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+gunicorn \
+  -k uvicorn.workers.UvicornWorker \
+  --config src/gunicorn.conf.py \
+  src.app:app

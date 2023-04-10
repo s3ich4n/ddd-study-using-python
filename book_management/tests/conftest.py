@@ -1,25 +1,42 @@
 #
-# 테스트 코드의 메인 conftest
+# 프로젝트 전체에 널리 사용되는 conftest
 #
 # @author      Seongeun Yu (s3ich4n@gmail.com)
-# @date        2023/03/25 22:48 created.
-# @modified    2023/03/25 22:48 modified.
+# @date        2023/04/07 12:45 created.
 # @license     Please refer to the LICENSE file on a root directory of project.
 #
 
 
+import asyncio
+from typing import Generator
+
 import pytest
 
-# from src.api.main import initialize_app
-# from tests.utils.database import clear_database
+from asgi_lifespan import LifespanManager
+from httpx import AsyncClient
+from sqlalchemy.orm import clear_mappers
+
+from src.app import app
 
 
-# @pytest.fixture(name="web_app")
-# def web_app_fixture():
-#     return initialize_app()
 #
+# FYI
+#   https://pytest-asyncio.readthedocs.io/en/latest/reference/fixtures.html#fixtures
 #
-# @pytest.fixture(name="test_client")
-# def test_client_fixture(web_app):
-#     with clear_database():
-#         yield TestClient(web_app)
+@pytest.fixture(scope="session")
+@pytest.mark.asyncio
+def event_loop(request) -> Generator:  # noqa: indirect usage
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    clear_mappers()
+    loop.close()
+
+
+@pytest.fixture(scope="session", name="client")
+async def test_client() -> AsyncClient:
+    async with LifespanManager(app):
+        async with AsyncClient(
+            app=app,
+            base_url='http://localhost:13370/',
+        ) as client:
+            yield client
